@@ -45,7 +45,7 @@ public class FabricTPSCommand {
         if(tps > 20F) tps = 20F;
         feedback.append("Overall: Mean tick time: ").append(String.format("%.3f", mspt))
                 .append(" ms. Mean TPS: ").append(String.format("%.3f", tps));
-        source.sendFeedback(Text.literal(feedback.toString()), false);
+        source.sendFeedback(() -> Text.literal(feedback.toString()), false);
         return 1;
     }
 
@@ -67,7 +67,7 @@ public class FabricTPSCommand {
         if(tps > 20F) tps = 20F;
         feedback.append("Overall: ").append(String.format("%.3f", mspt))
                 .append(" MSPT, ").append(String.format("%.3f", tps)).append(" TPS");
-        source.sendFeedback(Text.literal(feedback.toString()), false);
+        source.sendFeedback(() -> Text.literal(feedback.toString()), false);
         return 1;
     }
 }
