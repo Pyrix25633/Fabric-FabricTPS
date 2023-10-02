@@ -2,18 +2,21 @@ package net.rupyber_studios.fabric_tps.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
 import java.util.HashMap;
 
 public class FabricTPSCommand {
     public static HashMap<String, Float> dimensionTickTimes = new HashMap<>();
 
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, boolean dedicated) {
+    public static void register(CommandDispatcher<ServerCommandSource> dispatcher,
+                                CommandRegistryAccess registryAccess,
+                                CommandManager.RegistrationEnvironment environment) {
         dispatcher.register(CommandManager.literal("fabric")
                 .then(CommandManager.literal("tps").executes(FabricTPSCommand::fabricTPS)));
         dispatcher.register(CommandManager.literal("fabric")
@@ -42,7 +45,7 @@ public class FabricTPSCommand {
         if(tps > 20F) tps = 20F;
         feedback.append("Overall: Mean tick time: ").append(String.format("%.3f", mspt))
                 .append(" ms. Mean TPS: ").append(String.format("%.3f", tps));
-        source.sendFeedback(new LiteralText(feedback.toString()), false);
+        source.sendFeedback(Text.literal(feedback.toString()), false);
         return 1;
     }
 
@@ -64,7 +67,7 @@ public class FabricTPSCommand {
         if(tps > 20F) tps = 20F;
         feedback.append("Overall: ").append(String.format("%.3f", mspt))
                 .append(" MSPT, ").append(String.format("%.3f", tps)).append(" TPS");
-        source.sendFeedback(new LiteralText(feedback.toString()), false);
+        source.sendFeedback(Text.literal(feedback.toString()), false);
         return 1;
     }
 }
