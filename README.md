@@ -1,4 +1,4 @@
-# Minebucks Currency
+# Fabric TPS
 
 ### *A mod by Rupyber Studios*
 
@@ -8,7 +8,7 @@ This is a Fabric and Quilt Mod that adds an equivalent to `/forge tps` command:
 
 ## Visit our [Website](https://rupyberstudios.github.io/website/)!
 
-![Vanilla Plus Logo](./src/main/resources/assets/fabric_tps/icon.png)
+![Fabric TPS Logo](./src/main/resources/assets/fabric_tps/icon.png)
 ![requires Fabric API](https://i.imgur.com/HabVZJR.png)
 
 ## [Installation](https://rupyberstudios.github.io/website/pages/installation)
