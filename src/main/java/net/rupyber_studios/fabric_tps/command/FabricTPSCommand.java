@@ -26,7 +26,7 @@ public class FabricTPSCommand {
 
     private static int fabricTPS(CommandContext<ServerCommandSource> context) {
         ServerCommandSource source = context.getSource();
-        MinecraftServer server = context.getSource().getMinecraftServer();
+        MinecraftServer server = context.getSource().getServer();
         StringBuilder feedback = new StringBuilder();
         for(ServerWorld world : server.getWorlds()) {
             String key = world.getRegistryKey().getValue().toString();
@@ -48,7 +48,7 @@ public class FabricTPSCommand {
 
     private static int fabricTPSFancy(CommandContext<ServerCommandSource> context) {
         ServerCommandSource source = context.getSource();
-        MinecraftServer server = context.getSource().getMinecraftServer();
+        MinecraftServer server = context.getSource().getServer();
         StringBuilder feedback = new StringBuilder();
         for(ServerWorld world : server.getWorlds()) {
             String key = world.getRegistryKey().getValue().toString();
