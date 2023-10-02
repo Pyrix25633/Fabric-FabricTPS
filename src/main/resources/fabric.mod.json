@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 1,
+	"id": "fabric_tps",
+	"version": "${version}",
+	"name": "Fabric TPS",
+	"description": "This is a Fabric and Quilt Mod that adds an equivalent to `/forge tps` command: `/fabric tps`",
+	"authors": [
+		"Pyrix25633",
+		"Rupyber Studios"
+	],
+	"contributors": [],
+	"contact": {
+		"homepage": "https://rupyberstudios.github.io/website/",
+		"sources": "https://github.com/Pyrix25633/Fabric-FabricTPS",
+		"issues": "https://github.com/Pyrix25633/Fabric-FabricTPS/issues"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/fabric_tps/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"net.rupyber_studios.fabric_tps.FabricTPS"
+		]
+	},
+	"mixins": [
+		"fabric_tps.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.14.22",
+		"minecraft": "~1.16.5",
+		"java": ">=16",
+		"fabric": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
