@@ -1,7 +1,7 @@
 ---
 name: 'Fabric TPS Bug'
 about: 'Create a report to help us improve'
-title: 'FTB-XXX: Brief bug description'
+title: 'FTB-<N>: <Brief bug description>'
 labels: "\U0001F41B bug, \U0001F4D6 open"
 assignees: Pyrix25633
 
