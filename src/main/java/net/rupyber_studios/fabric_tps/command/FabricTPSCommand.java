@@ -40,7 +40,7 @@ public class FabricTPSCommand {
                     .append(String.format("%.3f", mspt)).append(" ms. Mean TPS: ")
                     .append(String.format("%.3f", tps)).append("\n");
         }
-        float mspt = server.getTickTime();
+        float mspt = server.getAverageTickTime();
         float tps = 1000F / mspt;
         if(tps > 20F) tps = 20F;
         feedback.append("Overall: Mean tick time: ").append(String.format("%.3f", mspt))
@@ -62,7 +62,7 @@ public class FabricTPSCommand {
                     .append(String.format("%.3f", mspt)).append(" MSPT, ")
                     .append(String.format("%.3f", tps)).append(" TPS\n");
         }
-        float mspt = server.getTickTime();
+        float mspt = server.getAverageTickTime();
         float tps = 1000F / mspt;
         if(tps > 20F) tps = 20F;
         feedback.append("Overall: ").append(String.format("%.3f", mspt))
