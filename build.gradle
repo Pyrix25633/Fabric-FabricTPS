@@ -1,6 +1,7 @@
 plugins {
 	id 'fabric-loom' version '1.7-SNAPSHOT'
 	id 'maven-publish'
+	id "com.hypherionmc.modutils.modpublisher" version "2.1.5"
 }
 
 version = project.mod_version
@@ -38,7 +39,11 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	
+
+	// Uncomment the following line to enable the deprecated Fabric API modules. 
+	// These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
+
+	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 }
 
 processResources {
@@ -84,5 +89,59 @@ publishing {
 		// Notice: This block does NOT have the same function as the block in the top level.
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
+	}
+}
+
+publisher {
+	apiKeys {
+		modrinth System.getenv("MODRINTH_TOKEN")
+		curseforge System.getenv("CURSE_TOKEN")
+		github System.getenv("GITHUB_TOKEN")
+	}
+
+	setCurseID("918784")
+	setModrinthID("X30askCw")
+
+	setVersionType("release")
+
+	setChangelog(new File("/media/pyrix25633/Drive/mods/FabricTPS/changelog.md").text)
+
+	setProjectVersion(project.semantic_version)
+
+	setDisplayName("Fabric TPS ${project.semantic_version}")
+
+	setGameVersions(project.minecraft_version)
+
+	setLoaders("fabric", "quilt")
+
+	setCurseEnvironment("server")
+
+	setIsManualRelease(false)
+
+	setArtifact("/media/pyrix25633/Drive/mods/FabricTPS/workspace/Fabric-FabricTPS/build/libs/fabric_tps-${project.mod_version}.jar")
+
+	setDisableMalwareScanner(true)
+
+	setJavaVersions(JavaVersion.VERSION_21, 21)
+
+	setDisableEmptyJarCheck(true)
+
+	github {
+		repo = "Pyrix25633/Fabric-FabricTPS"
+		tag = "v${project.semantic_version}"
+		displayName = "Fabric TPS ${project.mod_version}"
+		createTag = true
+		createRelease = true
+		updateRelease = true
+		draft = false
+		target = "main"
+	}
+
+	modrinthDepends {
+		optional 'fabric-api', 'qsl'
+	}
+
+	curseDepends {
+		optional 'fabric-api', 'qsl'
 	}
 }
