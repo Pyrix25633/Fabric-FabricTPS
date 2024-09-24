@@ -128,7 +128,7 @@ publisher {
 
 	github {
 		repo = "Pyrix25633/Fabric-FabricTPS"
-		tag = "v${project.semantic_version}"
+		tag = "${project.semantic_version}"
 		displayName = "Fabric TPS ${project.mod_version}"
 		createTag = true
 		createRelease = true
