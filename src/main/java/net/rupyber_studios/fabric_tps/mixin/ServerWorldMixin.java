@@ -21,6 +21,8 @@ import java.util.function.Supplier;
 @Mixin(ServerWorld.class)
 public abstract class ServerWorldMixin extends World {
     @Unique
+    private final String key = this.getRegistryKey().getValue().toString();
+    @Unique
     private long tickStart = 0;
 
     protected ServerWorldMixin(MutableWorldProperties properties, RegistryKey<World> registryRef, DynamicRegistryManager registryManager, RegistryEntry<DimensionType> dimensionEntry, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long biomeAccess, int maxChainedNeighborUpdates) {
@@ -29,16 +31,22 @@ public abstract class ServerWorldMixin extends World {
 
     @Inject(at = @At("HEAD"), method = "tick")
     private void tickStart(CallbackInfo info) {
-        tickStart = Util.getMeasuringTimeNano();
+        long currentTime = Util.getMeasuringTimeNano();
+        long tickDelta = currentTime - tickStart;
+        Float averageTickDelta = FabricTPSCommand.dimensionTickDeltas.get(key);
+        if(averageTickDelta == null)
+            averageTickDelta = 0F;
+        FabricTPSCommand.dimensionTickDeltas.put(key, averageTickDelta * 0.8F + (float)tickDelta / 1000000.0F * 0.19999999F);
+        tickStart = currentTime;
     }
 
     @Inject(at = @At("RETURN"), method = "tick")
     private void tickEnd(CallbackInfo info) {
-        String key = this.getRegistryKey().getValue().toString();
-        long tickDuration =  Util.getMeasuringTimeNano() - tickStart;
-        Float tickTime = FabricTPSCommand.dimensionTickTimes.get(key);
-        if(tickTime == null)
-            tickTime = 0F;
-        FabricTPSCommand.dimensionTickTimes.put(this.getRegistryKey().getValue().toString(), tickTime * 0.8F + (float)tickDuration / 1000000.0F * 0.19999999F);
+        long currentTime = Util.getMeasuringTimeNano();
+        long tickTime = currentTime - tickStart;
+        Float averageTickTime = FabricTPSCommand.dimensionTickTimes.get(key);
+        if(averageTickTime == null)
+            averageTickTime = tickTime / 1000000.0F;
+        FabricTPSCommand.dimensionTickTimes.put(key, averageTickTime * 0.8F + (float)tickTime / 1000000.0F * 0.19999999F);
     }
 }
