@@ -38,12 +38,14 @@
 		"fabric_tps.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.15.11",
-		"minecraft": "~1.21.1",
-		"java": ">=21",
-		"fabric-api": "*"
-	},
-	"suggests": {
-		"another-mod": "*"
+		"fabricloader": ">=${loader_version}",
+		"minecraft": [
+			"26.1",
+			"26.1.1",
+			"26.1.2",
+			"26.2"
+		],
+		"java": ">=25",
+		"fabric-api": ">=${fabric_version}"
 	}
 }
