@@ -5,6 +5,7 @@ import net.rupyber_studios.fabric_tps.command.FabricTPSCommand;
 
 public class ModRegistries {
     public static void registerCommands() {
-        CommandRegistrationCallback.EVENT.register(FabricTPSCommand::register);
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
+                FabricTPSCommand.register(dispatcher));
     }
 }

@@ -2,78 +2,89 @@ package net.rupyber_studios.fabric_tps.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 public class FabricTPSCommand {
-    public static HashMap<String, Float> dimensionTickTimes = new HashMap<>();
-    public static HashMap<String, Float> dimensionTickDeltas = new HashMap<>();
+    public static final Map<String, Float> dimensionTickTimes = new HashMap<>();
+    public static final Map<String, Float> dimensionTickDeltas = new HashMap<>();
 
-    public static void register(@NotNull CommandDispatcher<ServerCommandSource> dispatcher,
-                                CommandRegistryAccess registryAccess,
-                                CommandManager.RegistrationEnvironment environment) {
-        dispatcher.register(CommandManager.literal("fabric")
-                .then(CommandManager.literal("tps").executes(FabricTPSCommand::fabricTPS)));
-        dispatcher.register(CommandManager.literal("fabric")
-                .then(CommandManager.literal("tps").then(CommandManager.literal("fancy").executes(FabricTPSCommand::fabricTPSFancy))));
-        dispatcher.register(CommandManager.literal("quilt")
-                .then(CommandManager.literal("tps").executes(FabricTPSCommand::fabricTPS)));
-        dispatcher.register(CommandManager.literal("quilt")
-                .then(CommandManager.literal("tps").then(CommandManager.literal("fancy").executes(FabricTPSCommand::fabricTPSFancy))));
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(Commands.literal("fabric")
+                .then(Commands.literal("tps").executes(FabricTPSCommand::fabricTPS)
+                        .then(Commands.literal("fancy").executes(FabricTPSCommand::fabricTPSFancy))));
+        dispatcher.register(Commands.literal("quilt")
+                .then(Commands.literal("tps").executes(FabricTPSCommand::fabricTPS)
+                        .then(Commands.literal("fancy").executes(FabricTPSCommand::fabricTPSFancy))));
     }
 
-    private static int fabricTPS(@NotNull CommandContext<ServerCommandSource> context) {
-        ServerCommandSource source = context.getSource();
-        MinecraftServer server = context.getSource().getServer();
+    private static int fabricTPS(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        MinecraftServer server = source.getServer();
         StringBuilder feedback = new StringBuilder();
         double tpsSum = 0;
-        int numberOfDimensions = 0;
-        for(ServerWorld world : server.getWorlds()) {
-            String key = world.getRegistryKey().getValue().toString();
-            float mspt = dimensionTickTimes.get(key);
-            float tps = 1000 / dimensionTickDeltas.get(key);
+        int dimensionCount = 0;
+
+        for (ServerLevel world : server.getAllLevels()) {
+            String key = world.dimension().identifier().toString();
+            float mspt = dimensionTickTimes.getOrDefault(key, 0F);
+            float tps = calculateTps(dimensionTickDeltas.get(key));
             tpsSum += tps;
-            numberOfDimensions++;
+            dimensionCount++;
             feedback.append("Dim ").append(key).append(" (").append(key).append("): Mean tick time: ")
-                    .append(String.format("%.3f", mspt)).append(" ms. Mean TPS: ")
-                    .append(String.format("%.1f", Math.round(tps * 10F) / 10F)).append("\n");
+                    .append(format(mspt, 3)).append(" ms. Mean TPS: ")
+                    .append(format(Math.round(tps * 10F) / 10F, 1)).append("\n");
         }
-        float mspt = server.getAverageTickTime();
-        float tps = (float)tpsSum / numberOfDimensions;
-        feedback.append("Overall: Mean tick time: ").append(String.format("%.3f", mspt))
-                .append(" ms. Mean TPS: ").append(String.format("%.1f", Math.round(tps * 10F) / 10F));
-        source.sendFeedback(() -> Text.literal(feedback.toString()), false);
+
+        float mspt = server.getAverageTickTimeNanos() / 1_000_000.0F;
+        float tps = dimensionCount > 0 ? (float) tpsSum / dimensionCount : 20F;
+        feedback.append("Overall: Mean tick time: ").append(format(mspt, 3))
+                .append(" ms. Mean TPS: ").append(format(Math.round(tps * 10F) / 10F, 1));
+        source.sendSuccess(() -> Component.literal(feedback.toString()), false);
         return 1;
     }
 
-    private static int fabricTPSFancy(@NotNull CommandContext<ServerCommandSource> context) {
-        ServerCommandSource source = context.getSource();
-        MinecraftServer server = context.getSource().getServer();
+    private static int fabricTPSFancy(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        MinecraftServer server = source.getServer();
         StringBuilder feedback = new StringBuilder();
         double tpsSum = 0;
-        int numberOfDimensions = 0;
-        for(ServerWorld world : server.getWorlds()) {
-            String key = world.getRegistryKey().getValue().toString();
-            float mspt = dimensionTickTimes.get(key);
-            float tps = 1000 / dimensionTickDeltas.get(key);
+        int dimensionCount = 0;
+
+        for (ServerLevel world : server.getAllLevels()) {
+            String key = world.dimension().identifier().toString();
+            float mspt = dimensionTickTimes.getOrDefault(key, 0F);
+            float tps = calculateTps(dimensionTickDeltas.get(key));
             tpsSum += tps;
-            numberOfDimensions++;
+            dimensionCount++;
             feedback.append("'").append(key).append("'").append(": ")
-                    .append(String.format("%.3f", mspt)).append(" MSPT, ")
-                    .append(String.format("%.1f", Math.round(tps * 10F) / 10F)).append(" TPS\n");
+                    .append(format(mspt, 3)).append(" MSPT, ")
+                    .append(format(Math.round(tps * 10F) / 10F, 1)).append(" TPS\n");
         }
-        float mspt = server.getAverageTickTime();
-        float tps = (float)tpsSum / numberOfDimensions;
-        feedback.append("Overall: ").append(String.format("%.3f", mspt))
-                .append(" MSPT, ").append(String.format("%.1f", Math.round(tps * 10F) / 10F)).append(" TPS");
-        source.sendFeedback(() -> Text.literal(feedback.toString()), false);
+
+        float mspt = server.getAverageTickTimeNanos() / 1_000_000.0F;
+        float tps = dimensionCount > 0 ? (float) tpsSum / dimensionCount : 20F;
+        feedback.append("Overall: ").append(format(mspt, 3))
+                .append(" MSPT, ").append(format(Math.round(tps * 10F) / 10F, 1)).append(" TPS");
+        source.sendSuccess(() -> Component.literal(feedback.toString()), false);
         return 1;
+    }
+
+    private static float calculateTps(Float tickDeltaMs) {
+        if (tickDeltaMs == null || tickDeltaMs <= 0F) {
+            return 20F;
+        }
+        return Math.min(1000F / tickDeltaMs, 20F);
+    }
+
+    private static String format(float value, int precision) {
+        return String.format(Locale.ROOT, "%." + precision + "f", value);
     }
 }

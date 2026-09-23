@@ -1,14 +1,7 @@
 package net.rupyber_studios.fabric_tps.mixin;
 
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Util;
-import net.minecraft.util.profiler.Profiler;
-import net.minecraft.world.MutableWorldProperties;
-import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.rupyber_studios.fabric_tps.command.FabricTPSCommand;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -16,44 +9,37 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.function.Supplier;
+import java.util.function.BooleanSupplier;
 
-@Mixin(ServerWorld.class)
-public abstract class ServerWorldMixin extends World {
+@Mixin(ServerLevel.class)
+public abstract class ServerWorldMixin {
     @Unique
-    private final String key = this.getRegistryKey().getValue().toString();
-    @Unique
-    private long tickStart = 0;
-
-    protected ServerWorldMixin(MutableWorldProperties properties,
-                               RegistryKey<World> registryRef,
-                               DynamicRegistryManager registryManager,
-                               RegistryEntry<DimensionType> dimensionEntry,
-                               boolean isClient,
-                               boolean debugWorld,
-                               long seed,
-                               int maxChainedNeighborUpdates) {
-        super(properties, registryRef, registryManager, dimensionEntry, isClient, debugWorld, seed, maxChainedNeighborUpdates);
-    }
+    private long fabricTPS$tickStart = 0;
 
     @Inject(at = @At("HEAD"), method = "tick")
-    private void tickStart(CallbackInfo info) {
-        long currentTime = Util.getMeasuringTimeNano();
-        long tickDelta = currentTime - tickStart;
-        Float averageTickDelta = FabricTPSCommand.dimensionTickDeltas.get(key);
-        if(averageTickDelta == null)
-            averageTickDelta = 0F;
-        FabricTPSCommand.dimensionTickDeltas.put(key, averageTickDelta * 0.8F + (float)tickDelta / 1000000.0F * 0.19999999F);
-        tickStart = currentTime;
+    private void fabricTPS$tickStart(BooleanSupplier shouldKeepTicking, CallbackInfo info) {
+        long currentTime = Util.getNanos();
+        if (fabricTPS$tickStart > 0) {
+            String key = fabricTPS$key();
+            long tickDelta = currentTime - fabricTPS$tickStart;
+            float previousAverage = FabricTPSCommand.dimensionTickDeltas.getOrDefault(key, 50F);
+            float currentDeltaMs = (float) tickDelta / 1_000_000.0F;
+            FabricTPSCommand.dimensionTickDeltas.put(key, previousAverage * 0.8F + currentDeltaMs * 0.2F);
+        }
+        fabricTPS$tickStart = currentTime;
     }
 
     @Inject(at = @At("RETURN"), method = "tick")
-    private void tickEnd(CallbackInfo info) {
-        long currentTime = Util.getMeasuringTimeNano();
-        long tickTime = currentTime - tickStart;
-        Float averageTickTime = FabricTPSCommand.dimensionTickTimes.get(key);
-        if(averageTickTime == null)
-            averageTickTime = tickTime / 1000000.0F;
-        FabricTPSCommand.dimensionTickTimes.put(key, averageTickTime * 0.8F + (float)tickTime / 1000000.0F * 0.19999999F);
+    private void fabricTPS$tickEnd(BooleanSupplier shouldKeepTicking, CallbackInfo info) {
+        String key = fabricTPS$key();
+        long tickTime = Util.getNanos() - fabricTPS$tickStart;
+        float currentTickTimeMs = (float) tickTime / 1_000_000.0F;
+        float previousAverage = FabricTPSCommand.dimensionTickTimes.getOrDefault(key, currentTickTimeMs);
+        FabricTPSCommand.dimensionTickTimes.put(key, previousAverage * 0.8F + currentTickTimeMs * 0.2F);
+    }
+
+    @Unique
+    private String fabricTPS$key() {
+        return ((ServerLevel) (Object) this).dimension().identifier().toString();
     }
 }
