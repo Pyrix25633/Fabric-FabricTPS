@@ -19,11 +19,20 @@ public abstract class ServerWorldMixin {
 
     @Inject(at = @At("HEAD"), method = "tick")
     private void fabricTPS$tickStart(BooleanSupplier haveTime, CallbackInfo info) {
-        fabricTPS$tickStart = Util.getNanos();
+        // Set tick start time and store tick delta time to calculate TPS
+        long currentTime = Util.getNanos();
+        if(fabricTPS$tickStart > 0) {
+            String key = fabricTPS$key();
+            float tickDelta = (currentTime - fabricTPS$tickStart) / 1_000_000F;
+            float previousAverage = FabricTPSCommand.dimensionTickDeltas.getOrDefault(key, 50F);
+            FabricTPSCommand.dimensionTickDeltas.put(key, previousAverage * 0.8F + tickDelta * 0.2F);
+        }
+        fabricTPS$tickStart = currentTime;
     }
 
     @Inject(at = @At("RETURN"), method = "tick")
     private void fabricTPS$tickEnd(BooleanSupplier haveTime, CallbackInfo info) {
+        // Store tick time to calculate MSPT
         String key = fabricTPS$key();
         float tickTime = (Util.getNanos() - fabricTPS$tickStart) / 1_000_000F;
         float previousAverage = FabricTPSCommand.dimensionTickTimes.getOrDefault(key, tickTime);

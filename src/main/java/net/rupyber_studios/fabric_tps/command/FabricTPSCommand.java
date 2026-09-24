@@ -83,7 +83,7 @@ public class FabricTPSCommand {
         if(tickTime == null || tickTime <= 0F) {
             return 20F;
         }
-        return Math.min(1000F / tickTime, 20F);
+        return 1000F / tickTime;
     }
 
     @Contract(pure = true)
