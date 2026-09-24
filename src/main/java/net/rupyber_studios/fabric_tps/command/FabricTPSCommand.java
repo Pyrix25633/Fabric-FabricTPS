@@ -7,6 +7,8 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.NonNull;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -16,7 +18,7 @@ public class FabricTPSCommand {
     public static final Map<String, Float> dimensionTickTimes = new HashMap<>();
     public static final Map<String, Float> dimensionTickDeltas = new HashMap<>();
 
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+    public static void register(@NonNull CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("fabric")
                 .then(Commands.literal("tps").executes(FabricTPSCommand::fabricTPS)
                         .then(Commands.literal("fancy").executes(FabricTPSCommand::fabricTPSFancy))));
@@ -25,14 +27,14 @@ public class FabricTPSCommand {
                         .then(Commands.literal("fancy").executes(FabricTPSCommand::fabricTPSFancy))));
     }
 
-    private static int fabricTPS(CommandContext<CommandSourceStack> context) {
+    private static int fabricTPS(@NonNull CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
         MinecraftServer server = source.getServer();
         StringBuilder feedback = new StringBuilder();
         double tpsSum = 0;
         int dimensionCount = 0;
 
-        for (ServerLevel world : server.getAllLevels()) {
+        for(ServerLevel world : server.getAllLevels()) {
             String key = world.dimension().identifier().toString();
             float mspt = dimensionTickTimes.getOrDefault(key, 0F);
             float tps = calculateTps(dimensionTickDeltas.get(key));
@@ -51,14 +53,14 @@ public class FabricTPSCommand {
         return 1;
     }
 
-    private static int fabricTPSFancy(CommandContext<CommandSourceStack> context) {
+    private static int fabricTPSFancy(@NonNull CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
         MinecraftServer server = source.getServer();
         StringBuilder feedback = new StringBuilder();
         double tpsSum = 0;
         int dimensionCount = 0;
 
-        for (ServerLevel world : server.getAllLevels()) {
+        for(ServerLevel world : server.getAllLevels()) {
             String key = world.dimension().identifier().toString();
             float mspt = dimensionTickTimes.getOrDefault(key, 0F);
             float tps = calculateTps(dimensionTickDeltas.get(key));
@@ -77,14 +79,16 @@ public class FabricTPSCommand {
         return 1;
     }
 
-    private static float calculateTps(Float tickDeltaMs) {
-        if (tickDeltaMs == null || tickDeltaMs <= 0F) {
+    private static float calculateTps(Float tickTime) {
+        if(tickTime == null || tickTime <= 0F) {
             return 20F;
         }
-        return Math.min(1000F / tickDeltaMs, 20F);
+        return Math.min(1000F / tickTime, 20F);
     }
 
-    private static String format(float value, int precision) {
+    @Contract(pure = true)
+    @SuppressWarnings({"MalformedFormatString", "StringConcatenationInFormatCall"})
+    private static @NonNull String format(float value, int precision) {
         return String.format(Locale.ROOT, "%." + precision + "f", value);
     }
 }

@@ -1,7 +1,7 @@
 plugins {
 	id 'net.fabricmc.fabric-loom' version "${loom_version}"
 	id 'maven-publish'
-	id "com.hypherionmc.modutils.modpublisher" version "2.1.5"
+	id "com.hypherionmc.modutils.modpublisher" version "2.1.8"
 }
 
 version = project.mod_version
@@ -108,7 +108,7 @@ publisher {
 
 	setVersionType("release")
 
-//	setChangelog(new File("/media/pyrix25633/Drive/mods/FabricTPS/changelog.md").text)
+	setChangelog(new File("${project.rootDir}/changelog.md").text)
 
 	setProjectVersion(project.semantic_version)
 
@@ -122,7 +122,7 @@ publisher {
 
 	setIsManualRelease(false)
 
-	setArtifact("${project.buildDir}/libs/${project.archives_base_name}-${project.mod_version}.jar")
+	setArtifact("${project.rootDir}/build/libs/${project.archives_base_name}-${project.mod_version}.jar")
 
 	setDisableMalwareScanner(true)
 

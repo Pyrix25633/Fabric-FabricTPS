@@ -19,6 +19,6 @@ public class FabricTPS implements ModInitializer {
 		// Proceed with mild caution.
 		ModRegistries.registerCommands();
 
-		LOGGER.info("Hello Fabric world!");
+		LOGGER.info("FabricTPS initialized!");
 	}
 }
